@@ -1,26 +1,17 @@
 class Item:
-    def __init__(self, item_id, name, category, quantity, size=None, color=None, expiration_date=None):
-        self.item_id = item_id
+    def __init__(self, id: int, name: str, category: str, specific_attributes: dict, quantity: int):
+        self.id = id
         self.name = name
         self.category = category
+        self.specific_attributes = specific_attributes
         self.quantity = quantity
-        self.size = size
-        self.color = color
-        self.expiration_date = expiration_date
 
-    def update_quantity(self, amount):
+    def update_quantity(self, amount: int):
         self.quantity += amount
 
     def get_details(self):
-        return {
-            "ID": self.item_id,
-            "Name": self.name,
-            "Category": self.category,
-            "Quantity": self.quantity,
-            "Size": self.size,
-            "Color": self.color,
-            "Expiration Date": self.expiration_date,
-        }
+        return f"ID: {self.id}, Name: {self.name}, Category: {self.category}, " \
+               f"Attributes: {self.specific_attributes}, Quantity: {self.quantity}"
 class Inventory:
     def __init__(self):
         self.items = []
@@ -29,15 +20,15 @@ class Inventory:
         self.items.append(item)
 
     def remove_item(self, item_id: int):
-        self.items = [item for item in self.items if item.item_id != item_id]
+        self.items = [item for item in self.items if item.id != item_id]
 
-    def get_item(self, item_id: int) -> Item:
+    def get_item(self, item_id: int):
         for item in self.items:
-            if item.item_id == item_id:
+            if item.id == item_id:
                 return item
         return None
 
-    def list_items(self) -> list:
+    def list_items(self):
         return [item.get_details() for item in self.items]
 
     def update_inventory(self, item_id: int, amount: int):
@@ -45,30 +36,37 @@ class Inventory:
         if item:
             item.update_quantity(amount)
 
-    def check_stock(self, item_id: int) -> int:
-        item = self.get_item(item_id)
-        return item.quantity if item else 0
+    def check_stock(self):
+        return [(item.name, item.quantity) for item in self.items]
 class Report:
     def __init__(self, inventory: Inventory):
         self.inventory = inventory
 
-    def low_stock_report(self, threshold: int) -> list:
+    def low_stock_report(self, threshold: int):
         return [item.get_details() for item in self.inventory.items if item.quantity < threshold]
 
-    def expiry_report(self) -> list:
-        from datetime import datetime
-        return [item.get_details() for item in self.inventory.items if item.expiration_date and item.expiration_date < datetime.now()]
+    def expiry_report(self):
+        # Assuming expiration date is an attribute in specific_attributes
+        return [item.get_details() for item in self.inventory.items if 'expiration_date' in item.specific_attributes]
 
-    def sales_report(self) -> dict:
-        # Placeholder for sales data integration
-        pass
+    def sales_report(self):
+        # Example: Count items by category (dummy implementation)
+        report = {}
+        for item in self.inventory.items:
+            if item.category in report:
+                report[item.category] += 1
+            else:
+                report[item.category] = 1
+        return report
 
-    def generate_report(self) -> dict:
+    def generate_report(self):
+        low_stock = self.low_stock_report(threshold=5)
+        expiry_items = self.expiry_report()
+        sales = self.sales_report()
         return {
-            "Total Items": len(self.inventory.items),
-            "Items in Stock": sum(item.quantity for item in self.inventory.items),
-            "Low Stock Items": self.low_stock_report(threshold=5),  # Example threshold
-            "Expiring Items": self.expiry_report(),
+            "low_stock": low_stock,
+            "expiry": expiry_items,
+            "sales": sales
         }
 class User:
     def __init__(self, username: str, role: str):
@@ -76,104 +74,62 @@ class User:
         self.role = role
 
     def login(self):
-        # Implement login logic (e.g., checking username and password)
-        pass
+        # Placeholder for actual login implementation
+        return f"{self.username} logged in."
 
-    def get_permissions(self) -> list:
+    def get_permissions(self):
         permissions = {
-            "admin": ["add", "remove", "update", "view", "generate_report"],
-            "manager": ["view", "generate_report"],
+            "admin": ["add_item", "remove_item", "update_inventory", "generate_reports"],
+            "manager": ["add_item", "update_inventory", "view_inventory"],
         }
         return permissions.get(self.role, [])
 
     def perform_inventory_actions(self, action: str, *args):
-        if action in self.get_permissions():
-            # Implement action logic, e.g., self.inventory.add_item(args[0])
-            pass
+        permissions = self.get_permissions()
+        if action in permissions:
+            return f"Performing action: {action} with arguments {args}"
         else:
-            print("Permission denied for this action.")
+            return "Permission denied for this action."
+# Create an inventory instance
+inventory = Inventory()
+
+# Create some items
+item1 = Item(1, "Soccer Ball", "balls", {"size": "5", "color": "white"}, 10)
+item2 = Item(2, "Tennis Racket", "rackets", {"size": "standard", "color": "blue"}, 4)
+item3 = Item(3, "Basketball", "balls", {"size": "7", "color": "orange"}, 6)
+
+# Add items to inventory
+inventory.add_item(item1)
+inventory.add_item(item2)
+inventory.add_item(item3)
+
+# List all items
+print("Current Inventory:")
+print(inventory.list_items())
+
+# Update quantity of an item
+inventory.update_inventory(2, 5)  # Add 5 Tennis Rackets
+print("Updated Inventory:")
+print(inventory.list_items())
+
+# Generate a report
+report = Report(inventory)
+print("Low Stock Report:")
+print(report.low_stock_report(5))
 import json
 
 class Inventory:
-    # ... (existing code)
+    # Existing methods...
 
     def save_to_file(self, filename: str):
         with open(filename, 'w') as f:
-            json.dump([item.get_details() for item in self.items], f)
+            json.dump([item.__dict__ for item in self.items], f)
 
     def load_from_file(self, filename: str):
         with open(filename, 'r') as f:
             items_data = json.load(f)
-            for item_data in items_data:
-                item = Item(**item_data)
-                self.add_item(item)
-# Import necessary libraries
-from datetime import datetime, timedelta
+            self.items = [Item(**item_data) for item_data in items_data]
 
-# Create an instance of Inventory
-inventory = Inventory()
-
-# Create some items
-item1 = Item(item_id=1, name="Basketball", category="Sports", quantity=10, size="Medium", color="Orange")
-item2 = Item(item_id=2, name="Tennis Racket", category="Sports", quantity=5, size="Standard", color="Red")
-item3 = Item(item_id=3, name="Soccer Ball", category="Sports", quantity=15, size="Standard", color="White")
-item4 = Item(item_id=4, name="Baseball Glove", category="Sports", quantity=2, size="Large", color="Brown", expiration_date=datetime.now() + timedelta(days=30))  # Example of item with an expiration date
-
-# Add items to the inventory
-inventory.add_item(item1)
-inventory.add_item(item2)
-inventory.add_item(item3)
-inventory.add_item(item4)
-
-# List all items in the inventory
-print("Current Inventory:")
-for item in inventory.list_items():
-    print(item)
-
-# Update the quantity of an item
-inventory.update_inventory(item_id=1, amount=-2)  # Remove 2 Basketballs
-inventory.update_inventory(item_id=2, amount=5)   # Add 5 Tennis Rackets
-
-# Check stock of a specific item
-print(f"\nStock of Tennis Racket: {inventory.check_stock(item_id=2)}")
-
-# Generate a low stock report
-report = Report(inventory)
-print("\nLow Stock Report (Threshold = 5):")
-low_stock_items = report.low_stock_report(threshold=5)
-for item in low_stock_items:
-    print(item)
-
-# Generate an expiry report
-print("\nExpiry Report:")
-expiry_items = report.expiry_report()
-for item in expiry_items:
-    print(item)
-
-# Generate a summary report
-print("\nInventory Summary Report:")
-summary_report = report.generate_report()
-print(summary_report)
-
-# Save inventory to a JSON file
-inventory.save_to_file("inventory_data.json")
-
-# Load inventory from a JSON file (optional, here we just demonstrate usage)
-new_inventory = Inventory()
-new_inventory.load_from_file("inventory_data.json")
-print("\nLoaded Inventory from File:")
-for item in new_inventory.list_items():
-    print(item)
-
-# User actions demonstration
-user = User(username="admin", role="admin")
-
-# Simulating user performing inventory actions
-if "add" in user.get_permissions():
-    print("\nUser has permission to add items.")
-    new_item = Item(item_id=5, name="Football", category="Sports", quantity=20, size="Standard", color="Black")
-    inventory.add_item(new_item)
-
-print("\nUpdated Inventory after adding Football:")
-for item in inventory.list_items():
-    print(item)
+# Example of saving and loading inventory
+inventory.save_to_file('inventory.json')
+inventory.load_from_file('inventory.json')
