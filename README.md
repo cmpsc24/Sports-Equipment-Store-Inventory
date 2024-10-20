@@ -107,3 +107,73 @@ class Inventory:
             for item_data in items_data:
                 item = Item(**item_data)
                 self.add_item(item)
+# Import necessary libraries
+from datetime import datetime, timedelta
+
+# Create an instance of Inventory
+inventory = Inventory()
+
+# Create some items
+item1 = Item(item_id=1, name="Basketball", category="Sports", quantity=10, size="Medium", color="Orange")
+item2 = Item(item_id=2, name="Tennis Racket", category="Sports", quantity=5, size="Standard", color="Red")
+item3 = Item(item_id=3, name="Soccer Ball", category="Sports", quantity=15, size="Standard", color="White")
+item4 = Item(item_id=4, name="Baseball Glove", category="Sports", quantity=2, size="Large", color="Brown", expiration_date=datetime.now() + timedelta(days=30))  # Example of item with an expiration date
+
+# Add items to the inventory
+inventory.add_item(item1)
+inventory.add_item(item2)
+inventory.add_item(item3)
+inventory.add_item(item4)
+
+# List all items in the inventory
+print("Current Inventory:")
+for item in inventory.list_items():
+    print(item)
+
+# Update the quantity of an item
+inventory.update_inventory(item_id=1, amount=-2)  # Remove 2 Basketballs
+inventory.update_inventory(item_id=2, amount=5)   # Add 5 Tennis Rackets
+
+# Check stock of a specific item
+print(f"\nStock of Tennis Racket: {inventory.check_stock(item_id=2)}")
+
+# Generate a low stock report
+report = Report(inventory)
+print("\nLow Stock Report (Threshold = 5):")
+low_stock_items = report.low_stock_report(threshold=5)
+for item in low_stock_items:
+    print(item)
+
+# Generate an expiry report
+print("\nExpiry Report:")
+expiry_items = report.expiry_report()
+for item in expiry_items:
+    print(item)
+
+# Generate a summary report
+print("\nInventory Summary Report:")
+summary_report = report.generate_report()
+print(summary_report)
+
+# Save inventory to a JSON file
+inventory.save_to_file("inventory_data.json")
+
+# Load inventory from a JSON file (optional, here we just demonstrate usage)
+new_inventory = Inventory()
+new_inventory.load_from_file("inventory_data.json")
+print("\nLoaded Inventory from File:")
+for item in new_inventory.list_items():
+    print(item)
+
+# User actions demonstration
+user = User(username="admin", role="admin")
+
+# Simulating user performing inventory actions
+if "add" in user.get_permissions():
+    print("\nUser has permission to add items.")
+    new_item = Item(item_id=5, name="Football", category="Sports", quantity=20, size="Standard", color="Black")
+    inventory.add_item(new_item)
+
+print("\nUpdated Inventory after adding Football:")
+for item in inventory.list_items():
+    print(item)
