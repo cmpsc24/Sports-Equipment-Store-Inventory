@@ -17,7 +17,7 @@ class Item:
                 f"Quantity: {self.quantity}")
 class Inventory:
     def __init__(self):
-        self.items = []  # List to store Item objects
+        self.items = []  
 
     def add_item(self, item):
         self.items.append(item)
@@ -64,7 +64,7 @@ class Report:
         }
 class User:
     def __init__(self, username, role):
-        self.username = username  # Username of the user
+        self.username = username  
         self.role = role  # Role of the user (admin, manager)
 
     def login(self):
@@ -100,8 +100,12 @@ report = Report(inventory)
 user = User(username="admin", role="admin")
 print(user.login())
 
-item1 = Item(item_id=1, name="Tennis Ball", category="Balls", size="Medium", color="Yellow", quantity=10)
+item1 = Item(item_id=1, name="Soccer Ball", category="Balls", size="Medium", color="White", quantity=20);
+item2 = Item(item_id=2, name="Tennis Rackets", category="Rackets", size="Mid-Plus", color="Blue", quantity=25);
+item3 = Item(item_id=3, name="Skate Boards", category="Boards", size="Full", color="Black", quantity=10);
 inventory.add_item(item1)
+inventory.add_item(item2)
+inventory.add_item(item3)
 
 print(inventory.list_items())
 
