@@ -9,7 +9,7 @@ class Item:
     def update_quantity(self, amount: int):
         self.quantity += amount
 
-    def get_details(self):
+    def get_details(self) -> str:
         return f"ID: {self.id}, Name: {self.name}, Category: {self.category}, " \
                f"Attributes: {self.specific_attributes}, Quantity: {self.quantity}"
 class Inventory:
@@ -28,7 +28,7 @@ class Inventory:
                 return item
         return None
 
-    def list_items(self):
+    def list_items(self) -> list:
         return [item.get_details() for item in self.items]
 
     def update_inventory(self, item_id: int, amount: int):
@@ -36,62 +36,67 @@ class Inventory:
         if item:
             item.update_quantity(amount)
 
-    def check_stock(self):
+    def check_stock(self) -> list:
         return [(item.name, item.quantity) for item in self.items]
 class Report:
     def __init__(self, inventory: Inventory):
         self.inventory = inventory
 
-    def low_stock_report(self, threshold: int):
+    def low_stock_report(self, threshold: int) -> list:
         return [item.get_details() for item in self.inventory.items if item.quantity < threshold]
 
-    def expiry_report(self):
-        # Assuming expiration date is an attribute in specific_attributes
+    def expiry_report(self) -> list:
+        # Assuming expiration date is in specific_attributes
         return [item.get_details() for item in self.inventory.items if 'expiration_date' in item.specific_attributes]
 
-    def sales_report(self):
-        # Example: Count items by category (dummy implementation)
+    def sales_report(self) -> dict:
         report = {}
         for item in self.inventory.items:
-            if item.category in report:
-                report[item.category] += 1
-            else:
-                report[item.category] = 1
+            report[item.category] = report.get(item.category, 0) + item.quantity
         return report
 
-    def generate_report(self):
-        low_stock = self.low_stock_report(threshold=5)
-        expiry_items = self.expiry_report()
-        sales = self.sales_report()
+    def generate_report(self) -> dict:
         return {
-            "low_stock": low_stock,
-            "expiry": expiry_items,
-            "sales": sales
+            "low_stock": self.low_stock_report(threshold=5),
+            "expiry": self.expiry_report(),
+            "sales": self.sales_report()
         }
 class User:
     def __init__(self, username: str, role: str):
         self.username = username
         self.role = role
 
-    def login(self):
-        # Placeholder for actual login implementation
+    def login(self) -> str:
         return f"{self.username} logged in."
 
-    def get_permissions(self):
+    def get_permissions(self) -> list:
         permissions = {
             "admin": ["add_item", "remove_item", "update_inventory", "generate_reports"],
-            "manager": ["add_item", "update_inventory", "view_inventory"],
+            "manager": ["view_inventory", "update_inventory"],
         }
         return permissions.get(self.role, [])
 
     def perform_inventory_actions(self, action: str, *args):
-        permissions = self.get_permissions()
-        if action in permissions:
+        if action in self.get_permissions():
             return f"Performing action: {action} with arguments {args}"
         else:
             return "Permission denied for this action."
-# Create an inventory instance
+import json
+
+class Inventory:
+    # Existing methods...
+
+    def save_to_file(self, filename: str):
+        with open(filename, 'w') as f:
+            json.dump([item.__dict__ for item in self.items], f)
+
+    def load_from_file(self, filename: str):
+        with open(filename, 'r') as f:
+            items_data = json.load(f)
+            self.items = [Item(**item_data) for item_data in items_data]
+# Create inventory and user instances
 inventory = Inventory()
+user = User("admin_user", "admin")
 
 # Create some items
 item1 = Item(1, "Soccer Ball", "balls", {"size": "5", "color": "white"}, 10)
@@ -112,24 +117,16 @@ inventory.update_inventory(2, 5)  # Add 5 Tennis Rackets
 print("Updated Inventory:")
 print(inventory.list_items())
 
-# Generate a report
+# Generate a low stock report
 report = Report(inventory)
-print("Low Stock Report:")
+print("Low Stock Report (threshold 5):")
 print(report.low_stock_report(5))
-import json
 
-class Inventory:
-    # Existing methods...
-
-    def save_to_file(self, filename: str):
-        with open(filename, 'w') as f:
-            json.dump([item.__dict__ for item in self.items], f)
-
-    def load_from_file(self, filename: str):
-        with open(filename, 'r') as f:
-            items_data = json.load(f)
-            self.items = [Item(**item_data) for item_data in items_data]
-
-# Example of saving and loading inventory
+# Save inventory to a file
 inventory.save_to_file('inventory.json')
-inventory.load_from_file('inventory.json')
+
+# Load inventory from a file
+new_inventory = Inventory()
+new_inventory.load_from_file('inventory.json')
+print("Loaded Inventory:")
+print(new_inventory.list_items())
