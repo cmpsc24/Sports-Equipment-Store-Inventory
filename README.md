@@ -103,9 +103,9 @@ print(user.login())
 item1 = Item(item_id=1, name="Soccer Ball", category="Balls", size="Medium", color="White", quantity=20);
 item2 = Item(item_id=2, name="Tennis Rackets", category="Rackets", size="Mid-Plus", color="Blue", quantity=25);
 item3 = Item(item_id=3, name="Skate Boards", category="Boards", size="Full", color="Black", quantity=10);
-inventory.add_item(item1)
-inventory.add_item(item2)
-inventory.add_item(item3)
+inventory.add_item(item1);
+inventory.add_item(item2);
+inventory.add_item(item3);
 
 print(inventory.list_items())
 
