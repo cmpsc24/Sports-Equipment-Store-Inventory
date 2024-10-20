@@ -1,3 +1,23 @@
+import json
+
+class Inventory:
+    # existing methods...
+
+    def save_to_file(self, filename):
+        """Save inventory data to a JSON file."""
+        with open(filename, 'w') as f:
+            json.dump([item.get_details() for item in self.items], f)
+
+    def load_from_file(self, filename):
+        """Load inventory data from a JSON file."""
+        try:
+            with open(filename, 'r') as f:
+                item_data = json.load(f)
+                for data in item_data:
+                    item = Item(**data)  # Unpacking the dictionary to create an Item
+                    self.add_item(item)
+        except FileNotFoundError:
+            print(f"File {filename} not found.")
 class Item:
     def __init__(self, item_id, name, category, size=None, color=None, expiration_date=None, quantity=0):
         self.item_id = item_id          # Unique identifier for the item
@@ -106,23 +126,3 @@ class User:
         """Perform actions on the inventory based on user role."""
         # Logic to perform actions like add, remove, or view items
         pass
-import json
-
-class Inventory:
-    # existing methods...
-
-    def save_to_file(self, filename):
-        """Save inventory data to a JSON file."""
-        with open(filename, 'w') as f:
-            json.dump([item.get_details() for item in self.items], f)
-
-    def load_from_file(self, filename):
-        """Load inventory data from a JSON file."""
-        try:
-            with open(filename, 'r') as f:
-                item_data = json.load(f)
-                for data in item_data:
-                    item = Item(**data)  # Unpacking the dictionary to create an Item
-                    self.add_item(item)
-        except FileNotFoundError:
-            print(f"File {filename} not found.")
