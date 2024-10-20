@@ -1,20 +1,36 @@
 class Item:
-    def __init__(self, id: int, name: str, category: str, attributes: dict, quantity: int):
-        """Initializes an item with the given attributes."""
-        self.id = id
+    def __init__(self, item_id, name, category, attributes, quantity=0):
+        """
+        Initializes an Item object.
+        
+        :param item_id: Unique identifier for the item
+        :param name: Name of the item
+        :param category: Category of the item (e.g., 'balls', 'bats', etc.)
+        :param attributes: Dictionary containing specific attributes (size, color, etc.)
+        :param quantity: Available quantity of the item
+        """
+        self.item_id = item_id
         self.name = name
         self.category = category
         self.attributes = attributes
         self.quantity = quantity
 
-    def update_quantity(self, amount: int):
-        """Updates the quantity of the item."""
+    def update_quantity(self, amount):
+        """
+        Updates the quantity of the item.
+        
+        :param amount: Amount to add/subtract from the current quantity
+        """
         self.quantity += amount
 
-    def get_details(self) -> dict:
-        """Returns the details of the item."""
+    def get_details(self):
+        """
+        Returns a string with details of the item.
+        
+        :return: String representation of the item details
+        """
         return {
-            "ID": self.id,
+            "ID": self.item_id,
             "Name": self.name,
             "Category": self.category,
             "Attributes": self.attributes,
@@ -22,141 +38,185 @@ class Item:
         }
 class Inventory:
     def __init__(self):
-        """Initializes an empty inventory."""
+        """ Initializes an empty inventory list. """
         self.items = []
 
-    def add_item(self, item: Item):
-        """Adds an item to the inventory."""
+    def add_item(self, item):
+        """
+        Adds an Item object to the inventory.
+        
+        :param item: Item object to be added
+        """
         self.items.append(item)
 
-    def remove_item(self, item_id: int):
-        """Removes an item from the inventory by ID."""
-        self.items = [item for item in self.items if item.id != item_id]
-
-    def get_item(self, item_id: int) -> Item:
-        """Retrieves an item by ID."""
+    def remove_item(self, item_id):
+        """
+        Removes an Item object from the inventory based on its ID.
+        
+        :param item_id: ID of the item to be removed
+        :return: True if the item was removed, False if not found
+        """
         for item in self.items:
-            if item.id == item_id:
+            if item.item_id == item_id:
+                self.items.remove(item)
+                return True
+        return False
+
+    def get_item(self, item_id):
+        """
+        Retrieves an Item object from the inventory by its ID.
+        
+        :param item_id: ID of the item to retrieve
+        :return: Item object if found, None otherwise
+        """
+        for item in self.items:
+            if item.item_id == item_id:
                 return item
         return None
 
-    def list_items(self) -> list:
-        """Lists all items in the inventory."""
+    def list_items(self):
+        """
+        Returns a list of all items in the inventory.
+        
+        :return: List of Item objects
+        """
         return [item.get_details() for item in self.items]
 
-    def update_inventory(self, item_id: int, amount: int):
-        """Updates the quantity of a specific item."""
+    def update_inventory(self, item_id, amount):
+        """
+        Updates the quantity of a specified item in the inventory.
+        
+        :param item_id: ID of the item to update
+        :param amount: Amount to add/subtract from the item's quantity
+        :return: True if updated, False if item not found
+        """
         item = self.get_item(item_id)
         if item:
             item.update_quantity(amount)
+            return True
+        return False
 
-    def check_stock(self, item_id: int) -> int:
-        """Checks the stock level of an item."""
-        item = self.get_item(item_id)
-        return item.quantity if item else 0
+    def check_stock(self):
+        """
+        Checks stock levels for all items.
+        
+        :return: Dictionary of items with their stock levels
+        """
+        return {item.name: item.quantity for item in self.items}
 class Report:
-    def __init__(self, inventory: Inventory):
-        """Initializes the report with the given inventory."""
+    def __init__(self, inventory):
+        """
+        Initializes a Report object with a reference to an Inventory object.
+        
+        :param inventory: Reference to an Inventory object
+        """
         self.inventory = inventory
 
-    def low_stock_report(self, threshold: int) -> list:
-        """Generates a report of items below a specified stock threshold."""
+    def low_stock_report(self, threshold=5):
+        """
+        Generates a report of items below the specified stock threshold.
+        
+        :param threshold: Stock level to trigger a low stock report
+        :return: List of items below the threshold
+        """
         return [item.get_details() for item in self.inventory.items if item.quantity < threshold]
 
-    def expiry_report(self) -> list:
-        """Generates a report of items nearing their expiration date."""
-        return [item.get_details() for item in self.inventory.items if 'expiration' in item.attributes]
+    def expiry_report(self, current_date):
+        """
+        Generates a report of items that are expired based on the current date.
+        
+        :param current_date: Date to compare against expiration dates
+        :return: List of expired items
+        """
+        return [item.get_details() for item in self.inventory.items if "expiry_date" in item.attributes and item.attributes["expiry_date"] < current_date]
 
-    def sales_report(self) -> dict:
-        """Generates a sales report based on the current inventory."""
-        return {item.name: item.quantity for item in self.inventory.items}
-
-    def generate_report(self, report_type: str, *args) -> list:
-        """Generates different types of reports based on the report type."""
-        if report_type == 'low_stock':
-            return self.low_stock_report(*args)
-        elif report_type == 'expiry':
-            return self.expiry_report()
-        # Additional report types can be added here.
+    def generate_report(self):
+        """
+        Generates a general report of the inventory.
+        
+        :return: Dictionary summarizing inventory status
+        """
+        report = {
+            "Total Items": len(self.inventory.items),
+            "Low Stock Items": self.low_stock_report(),
+            "Stock Levels": self.inventory.check_stock()
+        }
+        return report
 class User:
-    def __init__(self, username: str, role: str):
-        """Initializes a user with a username and role."""
+    def __init__(self, username, role):
+        """
+        Initializes a User object.
+        
+        :param username: Username of the user
+        :param role: Role of the user (e.g., 'admin', 'manager')
+        """
         self.username = username
         self.role = role
 
-    def login(self) -> bool:
-        """Authenticates the user (placeholder for actual logic)."""
-        return True  # Placeholder for actual login logic
+    def login(self):
+        """
+        Simulates user login.
+        
+        :return: Confirmation message of successful login
+        """
+        return f"{self.username} logged in as {self.role}."
 
-    def get_permissions(self) -> list:
-        """Returns a list of permissions based on the user’s role."""
+    def get_permissions(self):
+        """
+        Returns the permissions associated with the user's role.
+        
+        :return: List of permissions
+        """
         permissions = {
-            'admin': ['add', 'remove', 'update', 'view', 'generate_reports'],
-            'manager': ['view', 'generate_reports'],
+            'admin': ['add_item', 'remove_item', 'update_inventory', 'view_reports'],
+            'manager': ['view_reports', 'update_inventory']
         }
         return permissions.get(self.role, [])
 
-    def perform_inventory_actions(self, action: str, item: Item, inventory: Inventory):
-        """Performs inventory-related actions based on user permissions."""
-        if action not in self.get_permissions():
-            raise PermissionError("You do not have permission to perform this action.")
-        if action == 'add':
-            inventory.add_item(item)
-        elif action == 'remove':
-            inventory.remove_item(item.id)
-        elif action == 'update':
-            inventory.update_inventory(item.id, item.quantity)
+    def perform_inventory_actions(self, action, *args):
+        """
+        Performs an action based on user permissions.
+        
+        :param action: Action to perform
+        :param args: Additional arguments for the action
+        :return: Result of the action or error message
+        """
+        if action in self.get_permissions():
+            if action == 'add_item':
+                inventory.add_item(*args)
+                return "Item added."
+            elif action == 'remove_item':
+                inventory.remove_item(*args[0])
+                return "Item removed."
+            elif action == 'update_inventory':
+                inventory.update_inventory(*args)
+                return "Inventory updated."
+            elif action == 'view_reports':
+                return "Reports viewed."
+        else:
+            return "Permission denied."
 import json
 
 class InventoryManager:
-    def __init__(self, inventory: Inventory, filename: str):
-        """Initializes the inventory manager with an inventory and a filename for data persistence."""
-        self.inventory = inventory
-        self.filename = filename
+    @staticmethod
+    def save_to_file(inventory, filename='inventory.json'):
+        """
+        Saves inventory data to a JSON file.
+        
+        :param inventory: Inventory object to save
+        :param filename: Name of the file to save to
+        """
+        with open(filename, 'w') as file:
+            json.dump([item.get_details() for item in inventory.items], file)
 
-    def save_to_file(self):
-        """Saves the inventory data to a JSON file."""
-        with open(self.filename, 'w') as file:
-            json.dump([item.get_details() for item in self.inventory.items], file)
-
-    def load_from_file(self):
-        """Loads the inventory data from a JSON file."""
-        try:
-            with open(self.filename, 'r') as file:
-                items_data = json.load(file)
-                for item_data in items_data:
-                    item = Item(
-                        id=item_data['ID'],
-                        name=item_data['Name'],
-                        category=item_data['Category'],
-                        attributes=item_data['Attributes'],
-                        quantity=item_data['Quantity']
-                    )
-                    self.inventory.add_item(item)
-        except FileNotFoundError:
-            print("No previous inventory file found.")
-# Create inventory
-inventory = Inventory()
-
-# Create items
-item1 = Item(id=1, name="Soccer Ball", category="Ball", attributes={"size": "5", "color": "white"}, quantity=10)
-item2 = Item(id=2, name="Tennis Racket", category="Racket", attributes={"size": "medium", "color": "yellow"}, quantity=5)
-
-# Add items to inventory
-inventory.add_item(item1)
-inventory.add_item(item2)
-
-# Create a report
-report = Report(inventory)
-
-# Generate low stock report
-low_stock = report.low_stock_report(threshold=6)
-print("Low Stock Report:", low_stock)  # Should show items below stock level of 6
-
-# User management
-admin = User(username="admin", role="admin")
-if admin.login():
-    admin.perform_inventory_actions('remove', item1, inventory)  # Remove item1 if permission granted
-
-# Save inventory to file
-manager = InventoryManager(inventory,
+    @staticmethod
+    def load_from_file(filename='inventory.json'):
+        """
+        Loads inventory data from a JSON file.
+        
+        :param filename: Name of the file to load from
+        :return: List of Item objects
+        """
+        with open(filename, 'r') as file:
+            items_data = json.load(file)
+            return [Item(**item) for item in items_data]
