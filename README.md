@@ -1,116 +1,42 @@
-class Item:
-    def __init__(self, item_id, name, category, size=None, color=None, expiration_date=None, quantity=0):
-        self.item_id = item_id 
-        self.name = name  
-        self.category = category  
-        self.size = size  
-        self.color = color  
-        self.expiration_date = expiration_date  
-        self.quantity = quantity  
+Decription of the Project : 
+The Sports Equipment Store Inventory System manages sports equipment inventory efficiently. It enables users to add, remove, update, and view sports equipment items. The system generates reports on stock levels and expiration dates of items, and has user role management, allowing different permissions for administrators and managers. This code defines specific attributes and methods for each class which ensures clear separation of class system such as it has Item class – which manages individual item properties like ID, name, category, etc., Inventory Class – which handles collections of Item objects, including operations like adding and removing items, Report Class – which focuses on generating inventory-related reports, and User Class – which manages user roles and permissions. For the output, when the item item1 is added to the inventory, there’s no direct output for this operation, but the item is now part of the inventory as inventory.list_items() method gets details of all items in the inventory. Since we added more items, the expected output will be a list containing that item's details, then the report.low_stock_report() method checks for items with quantities and since there are no items in the low stock report. The expected output will be an empty list [].  
 
-    def update_quantity(self, amount):
-        self.quantity += amount
+ 
+Flowhchart description : 
+Item Class: Represents individual items in the inventory, with attributes such as ID, name, category, size, color, expiration date, and quantity. It includes methods for updating quantities and retrieving item details. 
+Inventory Class: Manages a collection of Item objects. Which includes methods to add, remove, retrieve, list items, and check stock levels. 
+Report Class: Generates various reports based on inventory data. Which includes methods for low stock reports and expiration reports. 
+User Class: Handles user information and permissions. Which includes methods for logging in and checking permissions. 
 
-    def get_details(self):
-        return (f"ID: {self.item_id}, Name: {self.name}, Category: {self.category}, "
-                f"Size: {self.size}, Color: {self.color}, Expiry: {self.expiration_date}, "
-                f"Quantity: {self.quantity}")
-class Inventory:
-    def __init__(self):
-        self.items = []  
 
-    def add_item(self, item):
-        self.items.append(item)
+Instructions on how to use it for full functionalities provided by your code : 
+First to Initialize the System: create an instance of the Inventory class and then create an instance of the Report class, passing the inventory instance. Then, User Login: create a User instance with a username and role and call the login() method to log in. Then, Add Items: create Item instances with required attributes. Use the add_item() method of the Inventory class to add items. Then, List Items: call list_items() on the Inventory instance to view all items, and finally Generate Reports: call low_stock_report() or other report methods to generate reports based on the current inventory. 
 
-    def remove_item(self, item_id):
-        self.items = [item for item in self.items if item.item_id != item_id]
 
-    def get_item(self, item_id):
-        for item in self.items:
-            if item.item_id == item_id:
-                return item
-        return None
-
-    def list_items(self):
-        return [item.get_details() for item in self.items]
-
-    def update_inventory(self, item_id, amount):
-        item = self.get_item(item_id)
-        if item:
-            item.update_quantity(amount)
-
-    def check_stock(self, item_id):
-        item = self.get_item(item_id)
-        return item.quantity if item else 0
-class Report:
-    def __init__(self, inventory):
-        self.inventory = inventory
-
-    def low_stock_report(self, threshold=5):
-        return [item.get_details() for item in self.inventory.items if item.quantity < threshold]
-
-    def expiry_report(self):
-        from datetime import datetime
-        current_date = datetime.now()
-        return [item.get_details() for item in self.inventory.items if item.expiration_date and item.expiration_date < current_date]
-
-    def sales_report(self):
-        return "Sales report generation not yet implemented."
-
-    def generate_report(self):
-        return {
-            "low_stock": self.low_stock_report(),
-            "expiry_items": self.expiry_report()
-        }
-class User:
-    def __init__(self, username, role):
-        self.username = username  
-        self.role = role  # Role of the user (admin, manager)
-
-    def login(self):
-        return f"{self.username} logged in as {self.role}."
-
-    def get_permissions(self):
-        permissions = {
-            "admin": ["add_item", "remove_item", "update_inventory", "generate_reports"],
-            "manager": ["add_item", "update_inventory"]
-        }
-        return permissions.get(self.role, [])
-
-    def perform_inventory_actions(self, action, *args):
-        pass
-import json
-
-class InventoryManager:
-    def __init__(self, inventory):
-        self.inventory = inventory
-
-    def save_to_file(self, filename):
-        with open(filename, 'w') as f:
-            json.dump([item.__dict__ for item in self.inventory.items], f)
-
-    def load_from_file(self, filename):
-        with open(filename, 'r') as f:
-            items_data = json.load(f)
-            self.inventory.items = [Item(**item) for item in items_data]
-
-inventory = Inventory()
-report = Report(inventory)
-
-user = User(username="admin", role="admin")
-print(user.login())
-
+Verification of the sanity of the code to check the validity of the implemented functionalities : 
+To verify the functionality of the code - Create test cases for each method in the Item, Inventory, Report, and User classes, ensure that methods handle invalid inputs and test the interaction between classes to know if they work together as expected. 
+Adding Items - 
 item1 = Item(item_id=1, name="Soccer Ball", category="Balls", size="Medium", color="White", quantity=20);
-item2 = Item(item_id=2, name="Tennis Rackets", category="Rackets", size="Mid-Plus", color="Blue", quantity=25);
-item3 = Item(item_id=3, name="Skate Boards", category="Boards", size="Full", color="Black", quantity=10);
-item4 = Item(item_id=4, name="Badminton Rackets", category="Rackets", size="Mid-Medium", color="Red", quantity=25);
-item5 = Item(item_id=5, name="FootBall", category="Balls", size="Medium", color="Brown", quantity=30);
-inventory.add_item(item1);
-inventory.add_item(item2);
-inventory.add_item(item3);
-inventory.add_item(item4);
-inventory.add_item(item5);
+inventory.add_item(item1) 
+Generating Reports - 
+print(report.low_stock_report())  
+Create inventory and report instances
+inventory = Inventory() 
+report = Report(inventory) 
+User and log in
+user = User(username="admin", role="admin") 
+print(user.login()) 
 
-print(inventory.list_items())
 
-print(report.low_stock_report())
+Discuss your finding through this project, challenges faced during implementation, any limitations or areas for improvement :
+Findings - The approach using classes allows for easier access of the code and helps in managing permissions effectively. 
+Challenges Faced - Data consistency during updates was challenging and implementing a user-friendly interface for interactions. 
+Areas for Improvement - adding a user interface to make the system more accessible and implementing reporting features such as sales trends. 
+
+OUTPUT : 
+admin logged in as admin.
+['ID: 1, Name: Soccer Ball, Category: Balls, Size: Medium, Color: White, Expiry: None, Quantity: 20',
+'ID: 2, Name: Tennis Rackets, Category: Rackets, Size: Mid-Plus, Color: Blue, Expiry: None, Quantity: 25', 
+'ID: 3, Name: Skate Boards, Category: Boards, Size: Full, Color: Black, Expiry: None, Quantity: 10', 'ID: 4, Name: Badminton Rackets, Category: Rackets, Size: Mid-Medium, Color: Red, Expiry: None, Quantity: 25', 
+'ID: 5, Name: FootBall, Category: Balls, Size: Medium, Color: Brown, Expiry: None, Quantity: 30']
+[]
